@@ -1,0 +1,31 @@
+import mujoco
+import mujoco.viewer
+
+# ① 用字符串直接定义一个最简单的MJCF模型(不需要外部xml文件)
+xml = """
+<mujoco>
+  <worldbody>
+    <!-- 光源，让场景看得清楚 -->
+    <light name="top" pos="0 0 3"/>
+
+    <!-- 地面：一个静止的平面 -->
+    <geom name="floor" type="plane" size="2 2 0.1" rgba="0.8 0.8 0.8 1"/>
+
+    <!-- 一个会掉落的小球 -->
+    <body name="ball" pos="0 0 1.5">
+      <joint type="free"/>  <!-- free关节 = 有6个自由度，可以自由运动 -->
+      <geom type="sphere" size="0.1" rgba="1 0 0 1" mass="1"/>
+    </body>
+  </worldbody>
+</mujoco>
+"""
+
+# ② 把上面的XML字符串编译成模型
+model = mujoco.MjModel.from_xml_string(xml)
+data = mujoco.MjData(model)
+
+# ③ 打开可视化窗口，开始仿真循环
+with mujoco.viewer.launch_passive(model, data) as viewer:
+    while viewer.is_running():
+        mujoco.mj_step(model, data)   # 仿真前进一步
+        viewer.sync()                  # 同步画面
