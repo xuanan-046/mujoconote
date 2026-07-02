@@ -53,3 +53,37 @@ for i in range(100):
     mujoco.mj_step(model, data)
     if i % 10 == 0:
         print(f"第{i}步, 球的高度: {data.qpos[2]:.3f}")
+
+
+import mujoco
+import mujoco.viewer
+import time
+
+xml = """
+<mujoco>
+  <worldbody>
+    <light name="top" pos="0 0 3"/>
+    <geom name="floor" type="plane" size="2 2 0.1" rgba="0.8 0.8 0.8 1"/>
+    <body name="ball" pos="0 0 1.5">
+      <joint type="free"/>
+      <geom type="sphere" size="0.1" rgba="1 0 0 1" mass="1"/>
+    </body>
+  </worldbody>
+</mujoco>
+"""
+
+model = mujoco.MjModel.from_xml_string(xml)
+data = mujoco.MjData(model)
+
+with mujoco.viewer.launch_passive(model, data) as viewer:
+    start_time = time.time()
+    while viewer.is_running():
+        step_start = time.time()
+        
+        mujoco.mj_step(model, data)
+        viewer.sync()
+        
+        # 让每一步仿真的速度贴近真实时间流逝速度
+        time_until_next_step = model.opt.timestep - (time.time() - step_start)
+        if time_until_next_step > 0:
+            time.sleep(time_until_next_step)
