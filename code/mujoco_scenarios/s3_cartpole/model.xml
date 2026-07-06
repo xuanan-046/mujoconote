@@ -1,0 +1,30 @@
+<mujoco model="cartpole">
+  <!-- 场景3: Cart-Pole (倒立摆)
+       核心概念: 欠驱动系统、PID控制、LQR控制
+       小车沿x轴滑动(滑动关节)，杆子通过铰链连在小车上(旋转关节) -->
+
+  <compiler angle="radian"/>
+
+  <option timestep="0.005" gravity="0 0 -9.81" integrator="RK4"/>
+
+  <worldbody>
+    <light pos="0 0 3" dir="0 0 -1" diffuse="1 1 1"/>
+    <geom name="rail" type="cylinder" fromto="-2 0 0 2 0 0" size="0.01" rgba="0.5 0.5 0.5 1"/>
+
+    <body name="cart" pos="0 0 0">
+      <joint name="slider" type="slide" axis="1 0 0" range="-1.5 1.5" damping="0.1"/>
+      <geom name="cart_geom" type="box" size="0.1 0.1 0.05" mass="1.0" rgba="0.2 0.6 0.9 1"/>
+
+      <body name="pole" pos="0 0 0">
+        <!-- 初始角度稍微偏离竖直，模拟需要控制器纠正的场景 -->
+        <joint name="pole_hinge" type="hinge" axis="0 1 0" pos="0 0 0" damping="0.05"/>
+        <geom type="capsule" fromto="0 0 0 0 0 0.6" size="0.02" mass="0.1" rgba="0.9 0.3 0.2 1"/>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <!-- 只能控制小车水平方向的力，杆子本身无驱动 -> 典型欠驱动系统 -->
+    <motor name="cart_motor" joint="slider" gear="1" ctrlrange="-20 20"/>
+  </actuator>
+</mujoco>

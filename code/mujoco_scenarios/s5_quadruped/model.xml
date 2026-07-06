@@ -1,0 +1,80 @@
+<mujoco model="quadruped_balance">
+  <!-- 场景5: 简化四足机器人站立平衡
+       核心概念: 多点接触、力矩控制、姿态反馈(类似IMU读数)、地面反作用力
+       每条腿2个自由度(髋+膝)，用PD位置控制器维持站立姿态 -->
+
+  <!-- 同样必须声明angle="radian"，否则joint range会被误当作度数解析 -->
+  <compiler angle="radian"/>
+
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="RK4"/>
+
+  <default>
+    <joint damping="0.3"/>
+    <geom friction="1.2 0.05 0.001"/>
+  </default>
+
+  <worldbody>
+    <light pos="0 0 3" dir="0 0 -1" diffuse="1 1 1"/>
+    <geom name="floor" type="plane" size="2 2 0.1" rgba="0.7 0.7 0.7 1"/>
+
+    <body name="torso" pos="0 0 0.4">
+      <freejoint/>
+      <geom type="box" size="0.2 0.1 0.05" mass="2.0" rgba="0.3 0.3 0.8 1"/>
+      <site name="imu_site" pos="0 0 0" size="0.01"/>
+
+      <!-- 四条腿，每条: 髋关节(hinge) + 膝关节(hinge) -->
+      <body name="leg_fl" pos="0.15 0.08 0">
+        <joint name="hip_fl" type="hinge" axis="0 1 0" range="-0.8 0.8"/>
+        <geom type="capsule" fromto="0 0 0 0 0 -0.2" size="0.02" mass="0.15" rgba="0.6 0.6 0.6 1"/>
+        <body name="shin_fl" pos="0 0 -0.2">
+          <joint name="knee_fl" type="hinge" axis="0 1 0" range="-1.5 0"/>
+          <geom type="capsule" fromto="0 0 0 0 0 -0.2" size="0.018" mass="0.1" rgba="0.4 0.4 0.4 1"/>
+        </body>
+      </body>
+
+      <body name="leg_fr" pos="0.15 -0.08 0">
+        <joint name="hip_fr" type="hinge" axis="0 1 0" range="-0.8 0.8"/>
+        <geom type="capsule" fromto="0 0 0 0 0 -0.2" size="0.02" mass="0.15" rgba="0.6 0.6 0.6 1"/>
+        <body name="shin_fr" pos="0 0 -0.2">
+          <joint name="knee_fr" type="hinge" axis="0 1 0" range="-1.5 0"/>
+          <geom type="capsule" fromto="0 0 0 0 0 -0.2" size="0.018" mass="0.1" rgba="0.4 0.4 0.4 1"/>
+        </body>
+      </body>
+
+      <body name="leg_bl" pos="-0.15 0.08 0">
+        <joint name="hip_bl" type="hinge" axis="0 1 0" range="-0.8 0.8"/>
+        <geom type="capsule" fromto="0 0 0 0 0 -0.2" size="0.02" mass="0.15" rgba="0.6 0.6 0.6 1"/>
+        <body name="shin_bl" pos="0 0 -0.2">
+          <joint name="knee_bl" type="hinge" axis="0 1 0" range="-1.5 0"/>
+          <geom type="capsule" fromto="0 0 0 0 0 -0.2" size="0.018" mass="0.1" rgba="0.4 0.4 0.4 1"/>
+        </body>
+      </body>
+
+      <body name="leg_br" pos="-0.15 -0.08 0">
+        <joint name="hip_br" type="hinge" axis="0 1 0" range="-0.8 0.8"/>
+        <geom type="capsule" fromto="0 0 0 0 0 -0.2" size="0.02" mass="0.15" rgba="0.6 0.6 0.6 1"/>
+        <body name="shin_br" pos="0 0 -0.2">
+          <joint name="knee_br" type="hinge" axis="0 1 0" range="-1.5 0"/>
+          <geom type="capsule" fromto="0 0 0 0 0 -0.2" size="0.018" mass="0.1" rgba="0.4 0.4 0.4 1"/>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position name="a_hip_fl" joint="hip_fl" kp="80"/>
+    <position name="a_knee_fl" joint="knee_fl" kp="80"/>
+    <position name="a_hip_fr" joint="hip_fr" kp="80"/>
+    <position name="a_knee_fr" joint="knee_fr" kp="80"/>
+    <position name="a_hip_bl" joint="hip_bl" kp="80"/>
+    <position name="a_knee_bl" joint="knee_bl" kp="80"/>
+    <position name="a_hip_br" joint="hip_br" kp="80"/>
+    <position name="a_knee_br" joint="knee_br" kp="80"/>
+  </actuator>
+
+  <sensor>
+    <!-- 模拟IMU: 读取躯干的姿态(四元数)和角速度 -->
+    <framequat name="torso_orientation" objtype="body" objname="torso"/>
+    <gyro name="torso_gyro" site="imu_site"/>
+  </sensor>
+</mujoco>

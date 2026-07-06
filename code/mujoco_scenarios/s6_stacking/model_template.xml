@@ -1,0 +1,17 @@
+<mujoco model="box_stack">
+  <!-- 场景6: 多物体堆叠 - 求解器收敛性压力测试
+       核心概念: 接触求解器(PGS/CG/Newton)、迭代次数对穿模(penetration)的影响
+       本文件是模板，实际的box数量和求解器参数由run.py动态生成 -->
+
+  <!-- SOLVER_OPTION_PLACEHOLDER 会被run.py替换为不同的solver配置 -->
+  <compiler angle="radian"/>
+
+  <option timestep="0.002" gravity="0 0 -9.81" SOLVER_OPTION_PLACEHOLDER/>
+
+  <worldbody>
+    <light pos="0 0 3" dir="0 0 -1" diffuse="1 1 1"/>
+    <geom name="floor" type="plane" size="1 1 0.1" rgba="0.7 0.7 0.7 1"/>
+    <!-- BOX_BODIES_PLACEHOLDER 会被run.py替换为N个堆叠的box -->
+    BOX_BODIES_PLACEHOLDER
+  </worldbody>
+</mujoco>

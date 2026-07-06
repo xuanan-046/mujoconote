@@ -1,0 +1,36 @@
+<mujoco model="bouncing_ball">
+  <!-- 场景1: 自由落体 + 弹跳球
+       核心概念: 重力积分、恢复系数(restitution)、接触求解器 solref/solimp
+       两个球分别落在"橡胶地面"和"石头地面"上，观察弹跳高度差异 -->
+
+  <compiler angle="radian"/>
+
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="RK4"/>
+
+  <default>
+    <geom friction="1 0.005 0.0001"/>
+  </default>
+
+  <worldbody>
+    <light pos="0 0 3" dir="0 0 -1" diffuse="1 1 1"/>
+
+    <!-- 橡胶地面: solref中第一个值越小恢复系数越高(弹性越好) -->
+    <geom name="floor_rubber" type="plane" pos="-0.5 0 0" size="0.4 1 0.1"
+          rgba="0.8 0.3 0.3 1" solref="-8000 -40" solimp="0.9 0.95 0.001"/>
+
+    <!-- 石头地面: 几乎不反弹 -->
+    <geom name="floor_stone" type="plane" pos="0.5 0 0" size="0.4 1 0.1"
+          rgba="0.5 0.5 0.5 1" solref="0.02 1" solimp="0.9 0.95 0.001"/>
+
+    <body name="ball_rubber" pos="-0.5 0 1.0">
+      <freejoint/>
+      <geom name="ball1" type="sphere" size="0.05" mass="0.2" rgba="0.9 0.1 0.1 1"
+            solref="-8000 -40" solimp="0.9 0.95 0.001"/>
+    </body>
+
+    <body name="ball_stone" pos="0.5 0 1.0">
+      <freejoint/>
+      <geom name="ball2" type="sphere" size="0.05" mass="0.2" rgba="0.2 0.2 0.9 1"/>
+    </body>
+  </worldbody>
+</mujoco>

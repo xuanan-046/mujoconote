@@ -1,0 +1,49 @@
+<mujoco model="pendulums">
+  <!-- 场景2: 单摆 + 双摆
+       核心概念: hinge joint、能量守恒、数值积分误差、混沌现象
+       左侧单摆用于验证周期公式和能量守恒
+       右侧两组双摆(初始角度差0.0001度)用于展示混沌轨迹发散 -->
+
+  <compiler angle="radian"/>
+
+  <option timestep="0.001" gravity="0 0 -9.81" integrator="RK4"/>
+
+  <worldbody>
+    <light pos="0 0 3" dir="0 0 -1" diffuse="1 1 1"/>
+
+    <!-- 单摆: 摆长1m，摆锤质量1kg -->
+    <body name="single_pendulum_anchor" pos="-1 0 1.5">
+      <body name="single_arm" pos="0 0 0">
+        <joint name="single_hinge" type="hinge" axis="0 1 0" pos="0 0 0" damping="0"/>
+        <geom type="capsule" fromto="0 0 0 0 0 -1" size="0.01" mass="0.01"/>
+        <geom type="sphere" pos="0 0 -1" size="0.05" mass="1.0" rgba="0.2 0.6 0.9 1"/>
+      </body>
+    </body>
+
+    <!-- 双摆 A: 初始角度 60度 -->
+    <body name="double_A_anchor" pos="0.3 0 1.5">
+      <body name="dA_link1" pos="0 0 0">
+        <joint name="dA_hinge1" type="hinge" axis="0 1 0" damping="0"/>
+        <geom type="capsule" fromto="0 0 0 0 0 -0.5" size="0.01" mass="0.01"/>
+        <body name="dA_link2" pos="0 0 -0.5">
+          <joint name="dA_hinge2" type="hinge" axis="0 1 0" damping="0"/>
+          <geom type="capsule" fromto="0 0 0 0 0 -0.5" size="0.01" mass="0.01"/>
+          <geom type="sphere" pos="0 0 -0.5" size="0.04" mass="0.5" rgba="0.9 0.2 0.2 1"/>
+        </body>
+      </body>
+    </body>
+
+    <!-- 双摆 B: 初始角度 60.0001度 (仅角度差0.0001度，用于展示混沌) -->
+    <body name="double_B_anchor" pos="1 0 1.5">
+      <body name="dB_link1" pos="0 0 0">
+        <joint name="dB_hinge1" type="hinge" axis="0 1 0" damping="0"/>
+        <geom type="capsule" fromto="0 0 0 0 0 -0.5" size="0.01" mass="0.01"/>
+        <body name="dB_link2" pos="0 0 -0.5">
+          <joint name="dB_hinge2" type="hinge" axis="0 1 0" damping="0"/>
+          <geom type="capsule" fromto="0 0 0 0 0 -0.5" size="0.01" mass="0.01"/>
+          <geom type="sphere" pos="0 0 -0.5" size="0.04" mass="0.5" rgba="0.2 0.9 0.2 1"/>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>

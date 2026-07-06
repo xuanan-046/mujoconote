@@ -1,0 +1,73 @@
+<mujoco model="arm_grasp">
+  <!-- 场景4: 3-DOF机械臂抓取方块
+       核心概念: 正/逆运动学、关节空间控制、抓取稳定性(摩擦系数影响) -->
+
+  <!-- 重要: 必须声明angle="radian"，否则MuJoCo默认把range等角度值当作"度数"解析，
+       会导致比如range="-1.57 1.57"被解释成-1.57度到1.57度(几乎不能动)，
+       这是MJCF里最容易踩的坑之一 -->
+  <compiler angle="radian"/>
+
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="RK4"/>
+
+  <default>
+    <!-- 手臂连杆之间不需要互相碰撞检测(避免自身连杆卡住关节)，
+         只有手指和方块/地面之间的碰撞才是我们关心的 -->
+    <default class="armlink">
+      <geom contype="0" conaffinity="0"/>
+    </default>
+  </default>
+
+  <worldbody>
+    <light pos="0 0 3" dir="0 0 -1" diffuse="1 1 1"/>
+    <geom name="floor" type="plane" size="1 1 0.1" rgba="0.7 0.7 0.7 1"/>
+
+    <!-- 待抓取的方块，摩擦系数可调以测试抓取成功率 -->
+    <body name="cube" pos="0.35 0 0.05">
+      <freejoint/>
+      <geom name="cube_geom" type="box" size="0.03 0.03 0.03" mass="0.05"
+            rgba="0.9 0.5 0.1 1" friction="1.0 0.05 0.001"/>
+    </body>
+
+    <!-- 3-DOF机械臂: 基座旋转 + 肩关节 + 肘关节 -->
+    <body name="base" pos="0 0 0.1">
+      <geom class="armlink" type="cylinder" size="0.05 0.05" rgba="0.3 0.3 0.3 1"/>
+      <body name="link1" pos="0 0 0.05">
+        <joint name="base_yaw" type="hinge" axis="0 0 1" range="-3.14 3.14"/>
+        <geom class="armlink" type="capsule" fromto="0 0 0 0.2 0 0" size="0.02" mass="0.3" rgba="0.2 0.6 0.9 1"/>
+
+        <body name="link2" pos="0.2 0 0">
+          <joint name="shoulder" type="hinge" axis="0 1 0" range="-1.57 1.57" damping="0.5"/>
+          <geom class="armlink" type="capsule" fromto="0 0 0 0.2 0 0" size="0.02" mass="0.3" rgba="0.2 0.7 0.5 1"/>
+
+          <body name="link3" pos="0.2 0 0">
+            <joint name="elbow" type="hinge" axis="0 1 0" range="-2.5 0" damping="0.5"/>
+            <geom class="armlink" type="capsule" fromto="0 0 0 0.15 0 0" size="0.018" mass="0.2" rgba="0.8 0.4 0.2 1"/>
+
+            <!-- 简化的平行夹爪，用两个滑动关节模拟开合 -->
+            <body name="gripper_base" pos="0.15 0 0">
+              <site name="gripper_center" pos="0 0 0" size="0.005"/>
+              <body name="finger_left" pos="0 0.04 0">
+                <joint name="finger_l" type="slide" axis="0 -1 0" range="0 0.04"/>
+                <geom type="box" size="0.015 0.005 0.02" mass="0.02" rgba="0.5 0.5 0.5 1"
+                      friction="1.5 0.05 0.001"/>
+              </body>
+              <body name="finger_right" pos="0 -0.04 0">
+                <joint name="finger_r" type="slide" axis="0 1 0" range="0 0.04"/>
+                <geom type="box" size="0.015 0.005 0.02" mass="0.02" rgba="0.5 0.5 0.5 1"
+                      friction="1.5 0.05 0.001"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position name="act_base_yaw" joint="base_yaw" kp="30"/>
+    <position name="act_shoulder" joint="shoulder" kp="100"/>
+    <position name="act_elbow" joint="elbow" kp="100"/>
+    <position name="act_finger_l" joint="finger_l" kp="200"/>
+    <position name="act_finger_r" joint="finger_r" kp="200"/>
+  </actuator>
+</mujoco>
